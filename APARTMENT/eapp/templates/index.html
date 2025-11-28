@@ -1,0 +1,26 @@
+{% extends 'layout/base.html' %}
+{% block content %}
+<section class="container">
+    {% if apartment %}
+    <div class="row">
+        {% for a in apartment %}
+        <div class="col-md-3 col-6 p-2">
+            <div class="card">
+                <img class="card-img-top" src="{{ a.image }}" alt="{{ a.name }}">
+                <div class="card-body">
+                    <h4 class="card-title">{{ a.name }}</h4>
+                    <p class="card-title">Loại: {{ a.apartment_type.name }}</p>
+                    <p class="card-text">{{ a.price }} VNĐ/tháng</p>
+                    <p class="card-text">{{ a.area }}m</p>
+                    <a href="#" class="btn btn-primary">Xem chi tiết</a>
+                    <button class="btn btn-danger">Đặt hàng</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-danger mt-2">Không có căn hộ nào!</div>
+    {% endif %}
+</section>
+{% endblock %}
