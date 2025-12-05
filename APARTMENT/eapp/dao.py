@@ -2,6 +2,7 @@ import hashlib
 
 from sqlalchemy.sql.functions import user
 
+from eapp.enums import ContractType
 from eapp.models import ApartmentType, Apartment,User
 
 
@@ -17,6 +18,8 @@ def load_apartments(type_id=None,kw=None,page=1):
 
     if type_id:
         query = query.filter(Apartment.type_id==type_id)
+
+    query = query.filter(Apartment.status == ContractType.TRONG)
 
     return query.all()
 

@@ -12,8 +12,8 @@
                     <p class="card-title">Loại: {{ a.apartment_type.name }}</p>
                     <p class="card-text">{{ a.price }} VNĐ/tháng</p>
                     <p class="card-text">{{ a.area }}m</p>
-                    <a href="#" class="btn btn-primary">Xem chi tiết</a>
-                    <button class="btn btn-danger">Đặt hàng</button>
+                    <a href="{{ url_for('apartment_detail', id=a.id) }}" class="btn btn-primary">Xem chi tiết</a>
+                    <button class="btn btn-danger">Thuê căn hộ</button>
                 </div>
             </div>
         </div>

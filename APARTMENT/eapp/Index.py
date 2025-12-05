@@ -1,7 +1,8 @@
 from flask import render_template,request,redirect
 from flask_login import login_user
 
-from eapp.models import UserRole
+from eapp.enums import ContractType
+from eapp.models import UserRole, Apartment, ApartmentType
 from eapp import app, dao,login
 
 
@@ -28,9 +29,18 @@ def admin_login():
 
     return redirect('/admin')
 
+@app.route('/apartment/<int:id>')
+def apartment_detail(id):
+    apartment = Apartment.query.get_or_404(id)
+    apartmenttype = ApartmentType.query.all()
+    return render_template('apartment_detail.html',
+                           apartment=apartment,
+                           apartmenttype=apartmenttype)
+
 @login.user_loader
 def load_user(id):
     return dao.load_user_by_id(id)
+
 
 if __name__ == '__main__':
     from eapp import admin

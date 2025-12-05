@@ -1,0 +1,28 @@
+{% extends 'layout/base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-6 col-12 mb-3">
+      <img src="{{ apartment.image }}" alt="{{ apartment.name }}" class="img-fluid rounded w-100">
+    </div>
+
+    <!-- Nội dung chi tiết -->
+    <div class="col-md-6 col-12">
+      <h2>{{ apartment.name }}</h2>
+      <p><strong>Loại căn hộ:</strong> {{ apartment.apartment_type.name }}</p>
+      <p><strong>Diện tích:</strong> {{ apartment.area }} m²</p>
+      <p><strong>Giá thuê:</strong> {{ apartment.price }} VNĐ/tháng</p>
+
+      <h5>Quy tắc căn hộ:</h5>
+      <ul>
+        {% for rule in apartment.rules %}
+          <li>{{ rule.rule }}</li>
+        {% endfor %}
+      </ul>
+
+      <a href="{{ url_for('index') }}" class="btn btn-secondary">Quay lại danh sách</a>
+      <button class="btn btn-danger">Đặt thuê</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
