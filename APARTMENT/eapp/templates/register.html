@@ -1,0 +1,43 @@
+{% extends 'layout/base.html' %}
+{% block title%}Đăng ký{% endblock %}
+{% block content %}
+<h1 class="text-center text-success mt-1">ĐĂNG KÝ</h1>
+
+{% if err_msg %}
+<div class="alert alert-danger">{{ err_msg }}</div>
+{% endif %}
+
+<form method="post" action="/register" enctype="multipart/form-data">
+    <div class="form-group mb-2">
+        <label>Họ và tên</label>
+        <input type="text" class="form-control" placeholder="Nhập họ và tên" name="name" name="name" required>
+    </div>
+    <div class="form-group mb-2">
+        <label>Tên đăng nhập</label>
+        <input type="text" class="form-control" placeholder="Tên đăng nhập" id="name" name="username" required>
+    </div>
+    <div class="form-group mb-2">
+        <label>Email</label>
+        <input type="email" class="form-control" placeholder="Nhập email" name="email" required>
+    </div>
+
+    <div class="form-group mb-2">
+        <label>Số điện thoại</label>
+        <input type="text" class="form-control" placeholder="Nhập SĐT" name="phone" required>
+    </div>
+    <div class="form-group mb-2">
+        <label for="pwd">Mật khẩu</label>
+        <input type="password" class="form-control" placeholder="Nhập mật khẩu" id="pwd" name="password" required>
+    </div>
+    <div class="form-group mb-2">
+        <label for="pwd">Xác nhận mật khẩu</label>
+        <input type="password" class="form-control" placeholder="Xác nhận mật khẩu" id="confirm" name="confirm"
+               required>
+    </div>
+    <div class="form-group mb-2">
+        <label for="pwd">Ảnh đại diện</label>
+        <input type="file" class="form-control" id="avatar" name="avatar" required>
+    </div>
+    <button type="submit" class="btn btn-primary mb-2">Đăng ký</button>
+</form>
+{% endblock %}

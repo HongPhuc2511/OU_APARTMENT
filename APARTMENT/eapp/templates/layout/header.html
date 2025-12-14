@@ -12,6 +12,29 @@
                 <a class="nav-link" href="/?apartmenttype_id={{a.id}}">{{ a.name }}</a>
             </li>
             {% endfor %}
+
+            {% if current_user.is_authenticated %}
+            <li class="nav-item">
+                <a class="nav-link text-danger" href="/">
+                    <img src="{{current_user.avatar}}" width="40" class="rounded-circle">
+                    Chào {{current_user.username}}!
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-danger" href="/logout">Đăng Xuất</a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <a class="nav-link text-danger" href="/login">Đăng nhập</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-info" href="/register">Đăng ký</a>
+            </li>
+            {% endif %}
+
+            <li class="nav-item">
+                <a class="nav-link text-info" href="/cart">&#127968;<span class="badge bg-danger cart-counter">{{ cart_stats.total_quantity }}</span></a>
+            </li>
         </ul>
         <form class="d-flex" method="get" action="/">
             <input class="form-control me-2" type="text" placeholder="Tìm kiếm" name="kw">

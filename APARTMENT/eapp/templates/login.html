@@ -1,0 +1,15 @@
+{% extends 'layout/base.html' %}
+{% block content %}
+<h1 class="text-center text-success mt-1">ĐĂNG NHẬP</h1>
+<form method="post" action="/login">
+    <div class="form-group mb-2">
+        <label>Tên đăng nhập</label>
+        <input type="text" class="form-control" placeholder="Tên đăng nhập" id="name" name="username" required>
+    </div>
+    <div class="form-group mb-2">
+        <label for="pwd">Mật khẩu</label>
+        <input type="password" class="form-control" placeholder="Nhập mật khẩu" id="pwd" name="password" required>
+    </div>
+    <button type="submit" class="btn btn-primary mb-2">Đăng nhập</button>
+</form>
+{% endblock %}

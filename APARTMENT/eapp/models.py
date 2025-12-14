@@ -1,11 +1,14 @@
 import datetime
+from email.policy import default
+from statistics import quantiles
 
 from sqlalchemy.dialects.mysql import DATETIME
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin
 from eapp import db, app
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Enum, Date
-from eapp.enums import UserRole, ContractType, InvoiceType, PaymentType, PaymentStatus
+from eapp.enums import UserRole, ContractType, InvoiceType, PaymentType, PaymentStatus, ContractDuration
+from dateutil.relativedelta import relativedelta
 
 
 class BaseModel(db.Model):
@@ -29,11 +32,12 @@ class User(BaseModel, UserMixin):
     password = Column(String(50), nullable=False)
     email = Column(String(50), nullable=False, unique=True)
     phone = Column(String(50), nullable=False, unique=True)
+    avatar = Column(String(200),default='https://res.cloudinary.com/dcvwzsnhj/image/upload/v1764126854/1_wuddkf.jpg')
     user_role = Column(Enum(UserRole), default=UserRole.USER)
 
     address = db.relationship("Address", uselist=False,
                               backref="user", cascade="all, delete-orphan")
-    contracts = db.relationship("RentalContract", backref="user", lazy=True)
+    contracts = db.relationship("RentalContract", back_populates="user", lazy=True)
 
     def __str__(self):
         return self.name
@@ -59,7 +63,7 @@ class Apartment(BaseModel):
     apartment_type = db.relationship("ApartmentType", back_populates="apartments", lazy=True)
 
     services = db.relationship("ServiceDetail", backref="apartment", lazy=True)
-    rentalcontracts = db.relationship("RentalContract", backref="apartment", lazy=True)
+    rental_contracts = db.relationship("RentalContract", back_populates="apartment", lazy=True)
 
     apartment_Rule = db.relationship('ApartmentRule', backref='apartment', lazy=True)
 
@@ -86,7 +90,7 @@ class ServiceCategory(BaseModel):
 
 class Service(BaseModel):
     name = Column(String(50), nullable=False)
-    price = Column(Float, default=0)
+    unit_price=Column(Float, default=0)
     description = Column(String(100))
     service_type_id = Column(Integer, ForeignKey(ServiceCategory.id), nullable=False)
 
@@ -98,11 +102,19 @@ class Service(BaseModel):
 
 class ServiceDetail(BaseModel):
     name = Column(String(50), nullable=False)
-    dateuse = Column(Date)
     quantity = Column(Float, default=0)
+    price = Column(Float, default=0)
+    dateuse = Column(Date,default=datetime.date.today())
 
     service_id = Column(Integer, ForeignKey(Service.id), nullable=False)
     apartment_id = Column(Integer, ForeignKey(Apartment.id), nullable=False)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if 'quantity' in kwargs and 'service_id' in kwargs:
+            service = db.session.get(Service, kwargs['service_id'])
+            if service:
+                self.price = kwargs['quantity'] * service.unit_price
 
     def __str__(self):
         return self.name
@@ -113,12 +125,24 @@ class RentalContract(BaseModel):
     end_date = Column(Date)
     price = Column(Float, default=0)
     invoices = db.relationship('Invoice', backref='rental_contract', lazy=True)
+    duration = db.Column(db.Enum(ContractDuration), nullable=False)
 
     user_id = Column(Integer, ForeignKey(User.id), nullable=False)
     apartment_id = Column(Integer, ForeignKey(Apartment.id), nullable=False)
 
+    user = db.relationship("User", back_populates="contracts",lazy=True)
+    apartment = db.relationship("Apartment", back_populates="rental_contracts",lazy=True)
+
+
+    def calculate_end_date(self):
+        if self.start_date and self.duration:
+            if self.duration == ContractDuration.SIX_MONTHS:
+                    self.end_date = self.start_date + relativedelta(months=6)
+            elif self.duration == ContractDuration.ONE_YEAR:
+                self.end_date = self.start_date + relativedelta(years=1)
+
     def __str__(self):
-        return self.user.name
+        return f"Hợp đồng của {self.user.name} phòng {self.apartment.name}"
 
 
 class Invoice(BaseModel):
@@ -151,19 +175,19 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
 
-        a = Address(address="123 Main Street", country="VIETNAM")
-
-        import hashlib
-
-        u = User(name='User', username='Admin',
-                 password=str(hashlib.md5("123456".encode('utf-8')).hexdigest()),
-                 email='thanhhung3@gmail.com',
-                 phone='0359880031',
-                 user_role=UserRole.ADMIN,
-                 address=a)
-        db.session.add(u)
-        db.session.commit()
-
+        # a = Address(address="123 Main Street", country="VIETNAM")
+        #
+        # import hashlib
+        #
+        # u = User(name='Phuc', username='HongPhuc',
+        #          password=str(hashlib.md5("123456".encode('utf-8')).hexdigest()),
+        #          email='thanhhung332@gmail.com',
+        #          phone='0359880036',
+        #          user_role=UserRole.USER,
+        #          )
+        # db.session.add(u)
+        # db.session.commit()
+        #
         # type1=ApartmentType(name="Căn hộ 1 phòng")
         # type2 = ApartmentType(name="Căn hộ 2 phòng")
         # type3 = ApartmentType(name="Studio")
@@ -207,20 +231,20 @@ if __name__ == "__main__":
         # db.session.add(sc)
         # db.session.commit()
         #
-        # s=Service(name='Tiền điện',price=4000,description="Tiền điện",service_type_id=1)
+        # s=Service(name='Tiền điện',unit_price=4000,description="Tiền điện",service_type_id=1)
         # db.session.add(s)
         # db.session.commit()
-        #
-        # se_de=ServiceDetail(name="Tháng 11",dateuse=datetime.date(2025,11,25),quantity=10,service_id=1,apartment_id=1)
-        # db.session.add(se_de)
-        # db.session.commit()
-        #
+        # #
+        se_de=ServiceDetail(name="Tháng 11",quantity=10,dateuse=datetime.date(2025,11,25),service_id=3,apartment_id=1)
+        db.session.add(se_de)
+        db.session.commit()
+
         # contract=RentalContract(start_date=datetime.date(2025, 11, 25),
-        #                         end_date=datetime.date(2026, 11, 25),
-        #                          apartment_id=1,user_id=1)
+        #                          apartment_id=1,user_id=1,duration=ContractDuration.SIX_MONTHS)
+        # contract.calculate_end_date()
         # db.session.add(contract)
         # db.session.commit()
-        #
+
         # i=Invoice(issue_date=datetime.date.today(),due_date=datetime.date(2025,12,30),
         #  amount=100,status=InvoiceType.CHUA_THANH_TOAN,contract_id=1)
         # db.session.add(i)

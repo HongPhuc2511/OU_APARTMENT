@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
             crossorigin="anonymous"></script>
+    <link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dcvwzsnhj/image/upload/v1764129679/logo2_ruttf9.png">
 </head>
 <body>
 
@@ -15,13 +16,16 @@
 {% include 'layout/header.html' %}
 {% endblock %}
 
-{% block content %}
-<!--{% include 'layout/index.html' %}-->
-{% endblock %}
+<section class="container">
+    {% block content %}
+    <!--{% include 'layout/index.html' %}-->
+    {% endblock %}
+</section>
 
 {% block footer %}
 {% include 'layout/footer.html' %}
 {% endblock %}
 
+<script src="{{ url_for('static',filename='js/main.js')}}"></script>
 </body>
 </html>

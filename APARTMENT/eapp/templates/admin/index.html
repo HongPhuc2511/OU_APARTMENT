@@ -7,7 +7,7 @@
 <h2 class="text-success">Chao {{ current_user.name }}</h2>
 {% else %}
 <h2 class="text-success text-center">Dang nhap quan tri</h2>
-<form method="post" action="/admin-login">
+<form method="post" action="/login?next=/admin">
     <div class="form-group">
         <label>Tên đăng nhập</label>
         <input type="text" class="form-control" placeholder="Tên đăng nhập" id="name" name="username" required>

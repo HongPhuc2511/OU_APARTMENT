@@ -1,0 +1,34 @@
+{% extends 'layout/base.html' %}
+{% block content %}
+<h1 class="text-center text-success mt-1">Căn hộ đã thêm</h1>
+
+{% if 'cart' in session %}
+<table class="table">
+    <tr>
+        <th>ID</th>
+        <th>Hình ảnh</th>
+        <th>Loại phòng</th>
+        <th>Diện tích</th>
+        <th>Giá</th>
+    </tr>
+    {% for c in session['cart'].values() %}
+    <tr>
+        <th>{{ c.id }}</th>
+        <th>
+            <img src="{{ c.image }}" width="300" class="img-thumbnail">
+        </th>
+        <th>{{ c.apartment_type }}</th>
+        <th>{{ c.area }}</th>
+        <th>{{ "{:,.0f}".format(c.price) }}VNĐ</th>
+        <td>
+            <button class="btn btn-danger">&times;</button>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% else %}
+<div class="alert alert-danger mt-2">Không có sản phẩm trong giỏ</div>
+{% endif %}
+
+{% endblock %}

@@ -1,6 +1,15 @@
 {% extends 'layout/base.html' %}
 {% block content %}
 <section class="container">
+    {% if pages >1 %}
+
+    <ul class="pagination mt-2">
+        {% for i in range(1,pages+1) %}
+        <li class="page-item"><a class="page-link" href="/?page={{ i }}">{{ i }}</a></li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
     {% if apartment %}
     <div class="row">
         {% for a in apartment %}
@@ -13,7 +22,15 @@
                     <p class="card-text">{{ a.price }} VNĐ/tháng</p>
                     <p class="card-text">{{ a.area }}m</p>
                     <a href="{{ url_for('apartment_detail', id=a.id) }}" class="btn btn-primary">Xem chi tiết</a>
-                    <button class="btn btn-danger">Thuê căn hộ</button>
+                    <button class="btn btn-danger" onclick="addToCart(
+            {{ a.id }},
+            '{{ a.name }}',
+            {{ a.price }},
+            {{ a.area }},
+            '{{ a.apartment_type.name }}',
+            '{{ a.image }}'
+        )">Thuê căn hộ
+                    </button>
                 </div>
             </div>
         </div>

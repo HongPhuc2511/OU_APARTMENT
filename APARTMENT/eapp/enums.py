@@ -3,6 +3,7 @@ from enum import Enum as ContractEnum
 from enum import Enum as InvoiceEnum
 from enum import Enum as PaymentEnum
 from enum import Enum as PaymentStatus
+from enum import Enum as Duration
 
 class UserRole(UserEnum):
     USER=1
@@ -31,3 +32,7 @@ class PaymentStatus(PaymentStatus):
     THANH_CONG = 1
     THAT_BAI = 2
     CHO_XU_LY = 3
+
+class ContractDuration(Duration):
+    SIX_MONTHS = 1
+    ONE_YEAR = 2
