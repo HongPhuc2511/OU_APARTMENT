@@ -1,23 +1,27 @@
 {% extends 'admin/master.html' %}
 
 {% block body %}
+<div class="d-flex justify-content-center align-items-center bg-light" style="min-height: 100vh; padding-top: 80px;">
+  <div class="card shadow p-4" style="width: 100%; max-width: 400px;">
+    {% if current_user.is_authenticated %}
+      <h3 class="text-info text-center mb-3">Chào mừng bạn đến với trang quản trị</h3>
+      <h4 class="text-success text-center">Xin chào {{ current_user.name }}</h4>
+    {% else %}
+      <h3 class="text-success text-center mb-4">Đăng nhập quản trị</h3>
+      <form method="post" action="/login?next=/admin">
+        <div class="mb-3">
+          <label for="username" class="form-label">Tên đăng nhập</label>
+          <input type="text" class="form-control" id="username" name="username" placeholder="Tên đăng nhập" required>
+        </div>
 
-{% if current_user.is_authenticated %}
-<h1 class="text-info">Chao mung ban den voi trang quan tri</h1>
-<h2 class="text-success">Chao {{ current_user.name }}</h2>
-{% else %}
-<h2 class="text-success text-center">Dang nhap quan tri</h2>
-<form method="post" action="/login?next=/admin">
-    <div class="form-group">
-        <label>Tên đăng nhập</label>
-        <input type="text" class="form-control" placeholder="Tên đăng nhập" id="name" name="username" required>
-    </div>
-    <div class="form-group">
-        <label for="pwd">Mật khẩu</label>
-        <input type="password" class="form-control" placeholder="Nhập mật khẩu" id="pwd" name="password" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Đăng nhập</button>
-</form>
-{% endif %}
+        <div class="mb-3">
+          <label for="pwd" class="form-label">Mật khẩu</label>
+          <input type="password" class="form-control" id="pwd" name="password" placeholder="Nhập mật khẩu" required>
+        </div>
 
+        <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
 {% endblock %}

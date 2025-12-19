@@ -1,34 +1,59 @@
 {% extends 'layout/base.html' %}
 {% block content %}
-<h1 class="text-center text-success mt-1">Căn hộ đã thêm</h1>
+<div class="container py-5">
+  <h2 class="text-center text-success mb-4">🛒 Căn hộ đã thêm</h2>
 
-{% if 'cart' in session %}
-<table class="table">
-    <tr>
-        <th>ID</th>
-        <th>Hình ảnh</th>
-        <th>Loại phòng</th>
-        <th>Diện tích</th>
-        <th>Giá</th>
-    </tr>
-    {% for c in session['cart'].values() %}
-    <tr>
-        <th>{{ c.id }}</th>
-        <th>
-            <img src="{{ c.image }}" width="300" class="img-thumbnail">
-        </th>
-        <th>{{ c.apartment_type }}</th>
-        <th>{{ c.area }}</th>
-        <th>{{ "{:,.0f}".format(c.price) }}VNĐ</th>
-        <td>
-            <button class="btn btn-danger">&times;</button>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+  {% if 'cart' in session %}
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle text-center">
+      <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>Hình ảnh</th>
+          <th>Loại phòng</th>
+          <th>Diện tích (m²)</th>
+          <th>Giá</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in session['cart'].values() %}
+        <tr id="cart-item-{{ c.id }}">
+          <td>{{ c.id }}</td>
+          <td>
+            <img src="{{ c.image }}" width="120" class="img-thumbnail rounded">
+          </td>
+          <td>{{ c.apartment_type }}</td>
+          <td>{{ c.area }}</td>
+          <td class="text-danger fw-bold">{{ "{:,.0f}".format(c.price) }} VNĐ</td>
+          <td>
+            <a href="{{ url_for('apartment_detail', id=c.id) }}" class="btn btn-outline-primary btn-sm mb-1">Xem chi tiết</a>
+            <button class="btn btn-outline-danger btn-sm" onclick="deleteCart({{ c.id }})">&times;</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 
-{% else %}
-<div class="alert alert-danger mt-2">Không có sản phẩm trong giỏ</div>
-{% endif %}
+  <div class="alert alert-info mt-4 text-end">
+    <h4 class="mb-0">Tổng tiền: <span id="cart-total" class="text-danger">{{ "{:,.0f}".format(cart_stats.total_amount) }} VNĐ</span></h4>
+  </div>
 
+  <div class="text-end mt-3">
+    {% if current_user.is_authenticated %}
+    <button class="btn btn-success px-4" onclick="pay()">Thanh toán</button>
+    {% else %}
+    <div class="alert alert-warning d-inline-block">
+      Vui lòng <a href="/login?next=cart" class="text-decoration-underline">đăng nhập</a> để thanh toán!
+    </div>
+    {% endif %}
+  </div>
+
+  {% else %}
+  <div class="alert alert-danger text-center mt-5">
+    <h5>Không có sản phẩm nào trong giỏ hàng</h5>
+  </div>
+  {% endif %}
+</div>
 {% endblock %}

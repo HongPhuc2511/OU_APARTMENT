@@ -62,7 +62,7 @@ class Apartment(BaseModel):
 
     apartment_type = db.relationship("ApartmentType", back_populates="apartments", lazy=True)
 
-    services = db.relationship("ServiceDetail", backref="apartment", lazy=True)
+    services = db.relationship("ServiceDetail", backref="apartment", lazy=True,cascade="all, delete-orphan")
     rental_contracts = db.relationship("RentalContract", back_populates="apartment", lazy=True)
 
     apartment_Rule = db.relationship('ApartmentRule', backref='apartment', lazy=True)
@@ -124,7 +124,7 @@ class RentalContract(BaseModel):
     start_date = Column(Date)
     end_date = Column(Date)
     price = Column(Float, default=0)
-    invoices = db.relationship('Invoice', backref='rental_contract', lazy=True)
+    invoices = db.relationship( 'Invoice', backref='rental_contract', lazy=True, cascade="all, delete-orphan" )
     duration = db.Column(db.Enum(ContractDuration), nullable=False)
 
     user_id = Column(Integer, ForeignKey(User.id), nullable=False)
@@ -235,9 +235,9 @@ if __name__ == "__main__":
         # db.session.add(s)
         # db.session.commit()
         # #
-        se_de=ServiceDetail(name="Tháng 11",quantity=10,dateuse=datetime.date(2025,11,25),service_id=3,apartment_id=1)
-        db.session.add(se_de)
-        db.session.commit()
+        # se_de=ServiceDetail(name="Tháng 11",quantity=10,dateuse=datetime.date(2025,11,25),service_id=3,apartment_id=1)
+        # db.session.add(se_de)
+        # db.session.commit()
 
         # contract=RentalContract(start_date=datetime.date(2025, 11, 25),
         #                          apartment_id=1,user_id=1,duration=ContractDuration.SIX_MONTHS)

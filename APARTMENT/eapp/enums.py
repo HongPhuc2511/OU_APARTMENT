@@ -22,10 +22,10 @@ class InvoiceType(InvoiceEnum):
     TRE_HAN = 3
 
 class PaymentType(PaymentEnum):
-    TIEN_MAT = 1
-    CHUYEN_KHOAN = 2
-    MOMO = 3
-    ZALO_PAY = 4
+    TIEN_MAT = "Tiền mặt"
+    CHUYEN_KHOAN = "Chuyển khoản"
+    MOMO = "Ví MoMo"
+    ZALO_PAY = "ZaloPay"
 
 
 class PaymentStatus(PaymentStatus):

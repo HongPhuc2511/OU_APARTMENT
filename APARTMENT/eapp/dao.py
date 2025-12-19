@@ -1,9 +1,10 @@
+import datetime
 import hashlib
 
-from sqlalchemy.sql.functions import user
+from flask_login import current_user
 
-from eapp.enums import ContractType
-from eapp.models import ApartmentType, Apartment,User
+from eapp.enums import ContractType, ContractDuration
+from eapp.models import ApartmentType, Apartment,User,RentalContract
 from eapp import app, db
 import cloudinary.uploader
 
@@ -61,4 +62,21 @@ def add_user(name,username,email,phone,password,avatar):
         u.avatar=res.get('url')
 
     db.session.add(u)
+    db.session.commit()
+
+
+def add_contract(cart):
+    if cart:
+        for c in cart.values():
+            contract = RentalContract(user_id=current_user.id,
+                                      apartment_id=c['id'],
+                                      start_date=datetime.datetime.now(),
+                                      duration=ContractDuration.ONE_YEAR,
+                                      price=c['price'])
+            db.session.add(contract)
+
+            apartment = Apartment.query.get(c['id'])
+            if apartment:
+                apartment.status = ContractType.DANG_THUE
+
     db.session.commit()

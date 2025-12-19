@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, jsonify, session
-from flask_login import login_user, logout_user
+from flask_login import login_user, logout_user,login_required
 from sqlalchemy.testing import emits_warning
 
 from eapp.enums import ContractType
@@ -94,6 +94,16 @@ def logout_process():
     logout_user()
     return redirect('/login')
 
+@app.route('/api/cart/<int:id>',methods=['delete'])
+def delete_cart(id):
+    cart=session.get('cart')
+    id = str(id)
+    if cart and id in cart:
+        del cart[id]
+
+    session['cart'] = cart
+    return jsonify(utils.count_cart(cart))
+
 @app.route('/api/cart',methods=['post'])
 def add_to_cart():
     data = request.json
@@ -131,6 +141,26 @@ def add_to_cart():
         "message": "Đã thêm vào giỏ hàng!",
         "total_quantity": utils.count_cart(cart)
     })
+
+@app.route('/api/pay',methods=['post'])
+@login_required
+def pay():
+    try:
+        cart = session.get('cart')
+        print(f"Cart before processing: {cart}")  # Debug
+
+        dao.add_contract(cart=cart)
+
+        print("Contract added successfully")  # Debug
+
+        del session['cart']
+        session.modified = True
+        print("Cart deleted from session")  # Debug
+
+        return jsonify({'status': 200})
+    except Exception as ex:
+        print(f"ERROR in /api/pay: {ex}")  # Debug
+        return jsonify({'status': 400, 'err_msg': str(ex)})
 
 @app.route('/cart')
 def cart_view():

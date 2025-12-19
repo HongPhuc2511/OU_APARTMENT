@@ -1,26 +1,33 @@
 {% extends 'layout/base.html' %}
 {% block content %}
-<div class="container mt-4">
-  <div class="row">
-    <div class="col-md-6 col-12 mb-3">
-      <img src="{{ apartment.image }}" alt="{{ apartment.name }}" class="img-fluid rounded w-100">
+<div class="container py-5">
+  <div class="row g-4 align-items-center">
+
+    <div class="col-md-6">
+      <div class="border rounded shadow-sm overflow-hidden">
+        <img src="{{ apartment.image }}" alt="{{ apartment.name }}" class="img-fluid w-100">
+      </div>
     </div>
 
-    <div class="col-md-6 col-12">
-      <h2>{{ apartment.name }}</h2>
-      <p><strong>Loại căn hộ:</strong> {{ apartment.apartment_type.name }}</p>
-      <p><strong>Diện tích:</strong> {{ apartment.area }} m²</p>
-      <p><strong>Giá thuê:</strong> {{ apartment.price }} VNĐ/tháng</p>
-
-      <h5>Quy tắc căn hộ:</h5>
-      <ul>
-        {% for rule in apartment.rules %}
-          <li>{{ rule.rule }}</li>
-        {% endfor %}
+    <div class="col-md-6">
+      <h2 class="text-primary fw-bold mb-3">{{ apartment.name }}</h2>
+      <ul class="list-unstyled fs-5">
+        <li><strong>Loại căn hộ:</strong> {{ apartment.apartment_type.name }}</li>
+        <li><strong>Diện tích:</strong> {{ apartment.area }} m²</li>
+        <li><strong>Giá thuê:</strong> <span class="text-danger fw-bold">{{ "{:,.0f}".format(apartment.price) }} VNĐ/tháng</span></li>
       </ul>
 
-      <a href="{{ url_for('index') }}" class="btn btn-secondary">Quay lại danh sách</a>
-      <button class="btn btn-danger">Đặt thuê</button>
+      <div class="d-flex gap-3 mt-4">
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary px-4">Quay lại danh sách</a>
+        <button class="btn btn-success px-4" onclick="addToCart(
+              {{ apartment.id }},
+              '{{ apartment.name }}',
+              {{ apartment.price }},
+              {{ apartment.area }},
+              '{{ apartment.apartment_type.name }}',
+              '{{ apartment.image }}'
+          )">Đặt thuê</button>
+      </div>
     </div>
   </div>
 </div>

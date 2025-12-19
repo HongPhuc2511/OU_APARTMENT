@@ -1,45 +1,58 @@
-<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
   <div class="container-fluid">
-      <img src="https://res.cloudinary.com/dcvwzsnhj/image/upload/v1764129679/logo2_ruttf9.png" width="80">
-    <a class="navbar-brand" href="javascript:void(0)">OU APARTMENT</a>
+
+    <a class="navbar-brand d-flex align-items-center" href="/">
+      <img src="https://res.cloudinary.com/dcvwzsnhj/image/upload/v1764129679/logo2_ruttf9.png" width="50" class="me-2">
+      <span class="fw-bold">OU APARTMENT</span>
+    </a>
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mynavbar">
       <span class="navbar-toggler-icon"></span>
     </button>
+
     <div class="collapse navbar-collapse" id="mynavbar">
-        <ul class="navbar-nav me-auto">
-            {% for a in apartmenttype %}
-            <li class="nav-item">
-                <a class="nav-link" href="/?apartmenttype_id={{a.id}}">{{ a.name }}</a>
-            </li>
-            {% endfor %}
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        {% for a in apartmenttype %}
+        <li class="nav-item">
+          <a class="nav-link" href="/?apartmenttype_id={{a.id}}">{{ a.name }}</a>
+        </li>
+        {% endfor %}
+      </ul>
 
-            {% if current_user.is_authenticated %}
-            <li class="nav-item">
-                <a class="nav-link text-danger" href="/">
-                    <img src="{{current_user.avatar}}" width="40" class="rounded-circle">
-                    Chào {{current_user.username}}!
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-danger" href="/logout">Đăng Xuất</a>
-            </li>
-            {% else %}
-            <li class="nav-item">
-                <a class="nav-link text-danger" href="/login">Đăng nhập</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-info" href="/register">Đăng ký</a>
-            </li>
-            {% endif %}
+      <ul class="navbar-nav mb-2 mb-lg-0">
+        {% if current_user.is_authenticated %}
+        <li class="nav-item d-flex align-items-center">
+          <a class="nav-link text-light" href="/">
+            <img src="{{current_user.avatar}}" width="36" class="rounded-circle me-2 border border-light">
+            Chào <strong>{{current_user.username}}</strong>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-warning" href="/logout">Đăng xuất</a>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link text-info" href="/login">Đăng nhập</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-success" href="/register">Đăng ký</a>
+        </li>
+        {% endif %}
 
-            <li class="nav-item">
-                <a class="nav-link text-info" href="/cart">&#127968;<span class="badge bg-danger cart-counter">{{ cart_stats.total_quantity }}</span></a>
-            </li>
-        </ul>
-        <form class="d-flex" method="get" action="/">
-            <input class="form-control me-2" type="text" placeholder="Tìm kiếm" name="kw">
-            <button class="btn btn-primary" type="submit">Tìm</button>
-        </form>
+        <li class="nav-item">
+          <a class="nav-link position-relative text-light" href="/cart">
+            🏠
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-counter">
+              {{ cart_stats.total_quantity }}
+            </span>
+          </a>
+        </li>
+      </ul>
+
+      <form class="d-flex ms-3" method="get" action="/">
+        <input class="form-control me-2" type="search" placeholder="Tìm kiếm" name="kw">
+        <button class="btn btn-outline-primary" type="submit">Tìm</button>
+      </form>
     </div>
   </div>
 </nav>

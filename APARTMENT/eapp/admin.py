@@ -35,6 +35,7 @@ class ApartmentView(AuthenticatedModelView):
         'name': 'Tên căn hộ',
         'price': 'Giá thuê (VNĐ)',
         'area': 'Diện tích (m²)',
+        'image': 'Ảnh',
         'status': 'Trạng thái',
         'apartment_type': 'Loại căn hộ',
         'apartment_Rule':'Quy định',
@@ -42,7 +43,7 @@ class ApartmentView(AuthenticatedModelView):
         'rental_contracts':'Hợp đồng'
     }
 
-    form_columns = ['name', 'price', 'area', 'status', 'apartment_type','apartment_Rule', 'services', 'rental_contracts']
+    form_columns = ['name', 'price', 'area', 'status','image','apartment_type','apartment_Rule', 'services', 'rental_contracts']
 
 
 class ApartmentTypeView(AuthenticatedModelView):
@@ -92,11 +93,14 @@ class ContractView(AuthenticatedModelView):
         'user': 'Người thuê',
         'apartment': 'Căn hộ'
     }
-    form_columns = ['user', 'apartment','start_date','duration', 'price']
+    form_columns = ['user', 'apartment','start_date','duration','end_date', 'price']
 
     form_overrides = {
         'apartment': QuerySelectField
     }
+    extra_js = [
+        '/static/js/contract.js'
+    ]
 
     form_args = {
         'apartment': {
@@ -111,20 +115,6 @@ class ContractView(AuthenticatedModelView):
     column_searchable_list = ['price']
     can_export = True
 
-    # def on_model_change(self, form, model, is_created):
-    #
-    #     # 🔹 Auto calculate end_date based on duration
-    #     if model.start_date and model.duration:
-    #         if model.duration == ContractDuration.SIX_MONTHS:
-    #             model.end_date = model.start_date + relativedelta(months=6)
-    #         elif model.duration == ContractDuration.ONE_YEAR:
-    #             model.end_date = model.start_date + relativedelta(years=1)
-    #
-    #     # 🔹 Update apartment status
-    #     if model.apartment:
-    #         model.apartment.status = ContractType.DANG_THUE
-    #
-    #     return super().on_model_change(form, model, is_created)
     form_excluded_columns = ['end_date', 'invoices']
 
     def calculate_end(self, model):
@@ -139,7 +129,6 @@ class ContractView(AuthenticatedModelView):
 
         self.calculate_end(model)
 
-        # update apartment status
         if model.apartment:
             model.apartment.status = ContractType.DANG_THUE
 
@@ -158,7 +147,6 @@ class ContractView(AuthenticatedModelView):
         return model
 
     def on_model_delete(self, model):
-        """Tự trả trạng thái căn hộ khi xóa hợp đồng"""
 
         if model.apartment:
             model.apartment.status = ContractType.TRONG
@@ -178,33 +166,9 @@ class InvoiceView(AuthenticatedModelView):
         'amount': 'Số tiền',
         'status': 'Trạng thái',
         'rental_contract': 'Hợp đồng thuê',
-        'payments':'Loại thanh toán'
     }
+    form_excluded_columns = ['payments']
 
-    def on_model_change(self, form, model, is_created):
-        # Tiền thuê căn hộ từ hợp đồng
-        rent_amount = model.contract.price if model.contract else 0
-
-        # Xác định tháng/năm từ issue_date
-        month = model.issue_date.month
-        year = model.issue_date.year
-
-        # Tính tổng dịch vụ trong tháng/năm cho căn hộ của hợp đồng
-        services_total = 0
-        if model.contract:
-            service_details = ServiceDetail.query.filter(
-                ServiceDetail.apartment_id == model.contract.apartment_id,
-                db.extract('month', ServiceDetail.dateuse) == month,
-                db.extract('year', ServiceDetail.dateuse) == year
-            ).all()
-
-            for sd in service_details:
-                services_total += sd.price
-
-        # Gán tổng tiền vào hóa đơn
-        model.amount = rent_amount + services_total
-
-        return super().on_model_change(form, model, is_created)
 
 class ServiceView(AuthenticatedModelView):
     column_list =['id','name','unit_price','service_type_id']

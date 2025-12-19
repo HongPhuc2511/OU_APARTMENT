@@ -21,3 +21,40 @@ function addToCart(id,name,price,area,apartment_type,image){
         alert(data.message);
     });
 }
+
+function deleteCart(id,quantity){
+       fetch(`/api/cart/${id}`, {
+        method: 'delete'
+    })
+    .then(res => res.json())
+    .then(data => {
+        let eles = document.getElementsByClassName("cart-counter");
+        for (let e of eles)
+            e.innerText = data.total_quantity;
+
+        let row = document.getElementById(`cart-item-${id}`);
+        if (row) row.remove();
+
+        let totalEl = document.getElementById("cart-total");
+        if (totalEl) totalEl.innerText = data.total_amount.toLocaleString() + " VNĐ";
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Không thể xóa căn hộ!");
+    });
+}
+
+function pay(){
+    if(confirm("Bạn chắc chắn thanh toán?")=== true){
+        fetch("/api/pay",{
+            method:"post"
+        })
+        .then(res => res.json()).then(res=>{
+            if(res.status===200)
+            location.reload();
+            else
+            alert("Hệ thống bị lỗi!");
+        })
+    }
+}
+
