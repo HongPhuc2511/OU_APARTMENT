@@ -19,40 +19,77 @@
         {% endfor %}
       </ul>
 
-      <ul class="navbar-nav mb-2 mb-lg-0">
-        {% if current_user.is_authenticated %}
-        <li class="nav-item d-flex align-items-center">
-          <a class="nav-link text-light" href="/">
-            <img src="{{current_user.avatar}}" width="36" class="rounded-circle me-2 border border-light">
-            Chào <strong>{{current_user.username}}</strong>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-warning" href="/logout">Đăng xuất</a>
-        </li>
-        {% else %}
-        <li class="nav-item">
-          <a class="nav-link text-info" href="/login">Đăng nhập</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-success" href="/register">Đăng ký</a>
-        </li>
-        {% endif %}
+<div class="me-3">
+        <form class="d-flex ms-3" method="get" action="/">
+            <input class="form-control me-2" type="search" placeholder="Tìm kiếm theo tên" name="kw">
+            <button class="btn btn-outline-primary" type="submit">Tìm</button>
+        </form>
+</div>
 
-        <li class="nav-item">
-          <a class="nav-link position-relative text-light" href="/cart">
-            🏠
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-counter">
+
+    </div>
+
+      <ul class="navbar-nav mb-2 mb-lg-0">
+
+
+            {% if current_user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-2"
+             href="#" role="button" data-bs-toggle="dropdown">
+            <img src="{{ current_user.avatar }}"
+                 width="36" height="36"
+                 class="rounded-circle border border-light">
+            <span>{{ current_user.username }}</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end shadow">
+            <li><a class="dropdown-item" href="/profile">Hồ sơ</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="/logout">Đăng xuất</a></li>
+          </ul>
+        </li>
+
+
+          {% else %}
+          <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle btn btn-sm px-3"
+                 href="#"
+                 role="button"
+                 data-bs-toggle="dropdown"
+                 aria-expanded="false">
+                  Tài khoản
+              </a>
+
+              <ul class="dropdown-menu dropdown-menu-end shadow">
+                  <li>
+                      <a class="dropdown-item" href="/login">
+                          Đăng nhập
+                      </a>
+                  </li>
+                  <li>
+                      <a class="dropdown-item" href="/register">
+                          Đăng ký
+                      </a>
+                  </li>
+                  <li>
+                      <a class="dropdown-item" href="/admin">
+                          Quản lý
+                      </a>
+                  </li>
+              </ul>
+          </li>
+          {% endif %}
+          <li class="nav-item">
+              <a class="nav-link position-relative text-light" href="/cart">
+                  Thanh toán
+                  <span class="position-absolute top-0 start-100 translate-middle
+                 badge rounded-pill bg-danger">
+
               {{ cart_stats.total_quantity }}
             </span>
           </a>
         </li>
       </ul>
 
-      <form class="d-flex ms-3" method="get" action="/">
-        <input class="form-control me-2" type="search" placeholder="Tìm kiếm" name="kw">
-        <button class="btn btn-outline-primary" type="submit">Tìm</button>
-      </form>
-    </div>
+
   </div>
 </nav>

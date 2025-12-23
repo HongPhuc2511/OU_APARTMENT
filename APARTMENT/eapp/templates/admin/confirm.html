@@ -1,0 +1,133 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}̀
+<div class="container-fluid mt-4">
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">Xác nhận thanh toán</h5>
+    </div>
+
+    <div class="card-body p-0">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>User</th>
+            <th>Căn hộ</th>
+            <th>Số tiền</th>
+            <th>Phương thức</th>
+            <th class="text-center">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in payments %}
+          <tr id="row-{{ p.id }}">
+            <td>{{ p.invoice.rental_contract.user.username }}</td>
+            <td>{{ p.invoice.rental_contract.apartment.name }}</td>
+            <td class="fw-bold text-end">
+              {{ "{:,.0f}".format(p.amount) }} đ
+            </td>
+            <td>
+              <span class="badge bg-info">
+                {{ p.method.name }}
+              </span>
+            </td>
+            <td class="text-center">
+              <button
+                class="btn btn-success btn-sm"
+                onclick="approve({{ p.id }})">
+                ✔ Duyệt
+              </button>
+
+              <button
+                class="btn btn-danger btn-sm"
+                onclick="reject({{ p.id }})">
+                ✖ Từ chối
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="confirmModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle"></h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer">
+          <button class="btn" id="modalConfirmBtn">
+          Xác nhận
+        </button>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">
+          Hủy
+        </button>
+
+      </div>
+    </div>
+  </div>
+</div>
+<body>
+  <!-- Nội dung HTML ở đây -->
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Script custom của bạn -->
+
+</body>
+
+<script>
+let currentId = null;
+let currentAction = null;
+const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+
+function approve(id) {
+  openModal(
+    'Duyệt thanh toán',
+    'Bạn có chắc muốn duyệt thanh toán này?',
+    'btn-success',
+    () => submitAction(id, 'approve')
+  );
+}
+
+function reject(id) {
+  openModal(
+    'Từ chối thanh toán',
+    'Bạn có chắc muốn từ chối thanh toán này?',
+    'btn-danger',
+    () => submitAction(id, 'reject')
+  );
+}
+
+function openModal(title, body, btnClass, action) {
+  document.getElementById('modalTitle').innerText = title;
+  document.getElementById('modalBody').innerText = body;
+
+  const btn = document.getElementById('modalConfirmBtn');
+  btn.className = `btn ${btnClass}`;
+  btn.onclick = action;
+
+  modal.show();
+}
+
+function submitAction(id, type) {
+  fetch(`/admin/paymentconfirm/${id}/${type}`, {
+    method: 'POST'
+  })
+  .then(res => {
+    if (!res.ok) throw new Error();
+    modal.hide();
+    document.getElementById(`row-${id}`).remove(); // không reload
+  })
+  .catch(() => alert('Có lỗi xảy ra'));
+}
+</script>
+
+
+
+{% endblock %}

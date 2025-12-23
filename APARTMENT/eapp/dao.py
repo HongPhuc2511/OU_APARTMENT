@@ -1,12 +1,15 @@
-import datetime
+
 import hashlib
+
 
 from flask_login import current_user
 
-from eapp.enums import ContractType, ContractDuration
-from eapp.models import ApartmentType, Apartment,User,RentalContract
+from eapp.enums import ContractType, ContractDuration, InvoiceType, PaymentType, PaymentStatus
+from eapp.models import ApartmentType, Apartment, User, RentalContract, Invoice, Payment
 from eapp import app, db
 import cloudinary.uploader
+from sqlalchemy import func, extract
+import datetime
 
 def load_apartmenttypes():
     return ApartmentType.query.all()
@@ -64,19 +67,91 @@ def add_user(name,username,email,phone,password,avatar):
     db.session.add(u)
     db.session.commit()
 
+def add_contract(cart, payment_method):
+    if not cart:
+        return
 
-def add_contract(cart):
-    if cart:
-        for c in cart.values():
-            contract = RentalContract(user_id=current_user.id,
-                                      apartment_id=c['id'],
-                                      start_date=datetime.datetime.now(),
-                                      duration=ContractDuration.ONE_YEAR,
-                                      price=c['price'])
-            db.session.add(contract)
 
-            apartment = Apartment.query.get(c['id'])
-            if apartment:
-                apartment.status = ContractType.DANG_THUE
+    method_map = {
+        'cash': PaymentType.TIEN_MAT,
+        'bank': PaymentType.CHUYEN_KHOAN,
+        'momo': PaymentType.MOMO,
+        'zaloPay': PaymentType.ZALO_PAY
+    }
+
+    method = method_map.get(payment_method)
+    if not method:
+        raise ValueError(f'Invalid payment method: {payment_method}')
+
+    for c in cart.values():
+        # 1. Tạo hợp đồng (CHƯA kích hoạt)
+        contract = RentalContract(
+            user_id=current_user.id,
+            apartment_id=c['id'],
+            start_date=datetime.date.today(),
+            duration=ContractDuration.ONE_YEAR,
+            price=c['price']
+        )
+        contract.calculate_end_date()
+        db.session.add(contract)
+        db.session.flush()
+
+        invoice = Invoice(
+            issue_date=datetime.date.today(),
+            due_date=datetime.date.today() + datetime.timedelta(days=7),
+            amount=c['price'],
+            status=InvoiceType.CHUA_THANH_TOAN,
+            contract_id=contract.id
+        )
+        db.session.add(invoice)
+        db.session.flush()
+
+
+        payment = Payment(
+            payment_date=datetime.date.today(),
+            amount=c['price'],
+            method=method,
+            status=PaymentStatus.CHO_XU_LY,
+            invoice_id=invoice.id,
+            note="User yêu cầu thanh toán"
+        )
+        db.session.add(payment)
 
     db.session.commit()
+
+
+def get_user_contracts(user_id):
+    contracts = (db.session.query(RentalContract)
+                 .filter_by(user_id=user_id)
+                 .order_by(RentalContract.start_date.desc())  # mới nhất trước
+                 .all())
+    return contracts
+
+def get_apartments_status_stats():
+    return (db.session.query(Apartment.status,func.count(Apartment.id)).group_by(Apartment.status).all())
+
+def get_revenue_by_month(year=2025):
+    return (
+        db.session.query(
+            extract('month', Invoice.issue_date).label('month'),
+            func.sum(Invoice.amount).label('revenue')
+        )
+        .filter(
+            extract('year', Invoice.issue_date) == year,
+            Invoice.status == InvoiceType.DA_THANH_TOAN
+        )
+        .group_by('month')
+        .order_by('month')
+        .all()
+    )
+
+from datetime import date, timedelta
+
+def get_contracts_expiring(days):
+    deadline = date.today() + timedelta(days=days)
+
+    return (
+        db.session.query(RentalContract).filter(RentalContract.end_date != None,
+                                                RentalContract.end_date >= date.today(),
+                                                RentalContract.end_date <= deadline
+                                                ).order_by(RentalContract.end_date.asc()).all())

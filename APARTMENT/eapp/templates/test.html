@@ -1,0 +1,22 @@
+{% extends 'layout/base.html' %}
+{% block content %}
+{% for c in contracts %}
+  <div class="contract-card">
+    <h4>Căn hộ: {{ c.apartment.name }}</h4>
+
+    <p>Giá: {{ c.price }} VNĐ</p>
+
+    {% set invoice = c.invoices[0] %}
+    {% set payment = invoice.payments[0] %}
+
+    {% if payment.status == PaymentStatus.CHO_XU_LY %}
+      <span class="badge bg-warning">Đang chờ xử lý</span>
+    {% elif payment.status == PaymentStatus.THANH_CONG %}
+      <span class="badge bg-success">Đã thanh toán</span>
+    {% elif payment.status == PaymentStatus.THAT_BAI %}
+      <span class="badge bg-danger">Thanh toán thất bại</span>
+    {% endif %}
+  </div>
+{% endfor %}
+
+{% endblock %}

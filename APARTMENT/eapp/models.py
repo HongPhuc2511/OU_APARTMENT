@@ -238,13 +238,13 @@ if __name__ == "__main__":
         # se_de=ServiceDetail(name="Tháng 11",quantity=10,dateuse=datetime.date(2025,11,25),service_id=3,apartment_id=1)
         # db.session.add(se_de)
         # db.session.commit()
-
+        #
         # contract=RentalContract(start_date=datetime.date(2025, 11, 25),
         #                          apartment_id=1,user_id=1,duration=ContractDuration.SIX_MONTHS)
         # contract.calculate_end_date()
         # db.session.add(contract)
         # db.session.commit()
-
+        #
         # i=Invoice(issue_date=datetime.date.today(),due_date=datetime.date(2025,12,30),
         #  amount=100,status=InvoiceType.CHUA_THANH_TOAN,contract_id=1)
         # db.session.add(i)

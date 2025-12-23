@@ -1,0 +1,54 @@
+{% extends 'layout/base.html' %}
+{% block content %}
+<div class="container mt-4">
+
+  <div class="row">
+    <!-- Thông tin cơ bản -->
+    <div class="col-md-4">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+          <img src="{{ user.avatar_url or url_for('static', filename='images/default-avatar.png') }}"
+               class="rounded-circle mb-3" width="120" height="120">
+          <h4>{{ user.username }}</h4>
+          <p class="text-muted">{{ user.email }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Danh sách hợp đồng -->
+    <div class="col-md-8">
+      <h5>Hợp đồng & Thanh toán</h5>
+
+      {% for c in contracts %}
+      <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <h6 class="card-title">Căn hộ: {{ c.apartment.name }}</h6>
+            <span class="fw-bold">{{ "{:,.0f}".format(c.price) }} VNĐ</span>
+          </div>
+
+          {% set invoice = c.invoices[0] %}
+          {% set payment = invoice.payments[0] %}
+
+          <p class="mb-1">Ngày tạo hợp đồng: {{ c.start_date.strftime('%d/%m/%Y') }}</p>
+          <p class="mb-1">Ngày hết hạn: {{ c.end_date.strftime('%d/%m/%Y') }}</p>
+
+          <p>
+            Trạng thái thanh toán:
+            {% if payment.status == PaymentStatus.CHO_XU_LY %}
+              <span class="badge bg-warning">Đang chờ xử lý</span>
+            {% elif payment.status == PaymentStatus.THANH_CONG %}
+              <span class="badge bg-success">Đã thanh toán</span>
+            {% elif payment.status == PaymentStatus.THAT_BAI %}
+              <span class="badge bg-danger">Thanh toán thất bại</span>
+            {% endif %}
+          </p>
+
+          <p>Phương thức: <span class="badge bg-info">{{ payment.method.name }}</span></p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

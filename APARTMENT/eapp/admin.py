@@ -7,15 +7,17 @@ from flask_admin import BaseView, expose
 from flask_admin.contrib.sqla.fields import QuerySelectField
 from werkzeug.routing import Rule
 
-from eapp.enums import ContractType
-from eapp.models import ApartmentType, Apartment, UserRole, ApartmentRule, RentalContract, Invoice, Service, \
+from eapp.enums import ContractType, PaymentStatus, InvoiceType
+from eapp.models import ApartmentType, Apartment, UserRole, ApartmentRule, RentalContract, Invoice,Payment, Service, \
     ServiceDetail
-from flask import template_rendered
+from flask import template_rendered, jsonify
 from flask_admin import Admin
 from eapp import db,app
 from flask_login import logout_user, current_user
 from flask import redirect
 from enums import ContractDuration
+import dao
+from datetime import date
 
 admin=Admin(app=app,name="Apartment Admin")
 
@@ -115,7 +117,7 @@ class ContractView(AuthenticatedModelView):
     column_searchable_list = ['price']
     can_export = True
 
-    form_excluded_columns = ['end_date', 'invoices']
+    form_excluded_columns = ['invoices']
 
     def calculate_end(self, model):
         if model.start_date and model.duration:
@@ -153,6 +155,8 @@ class ContractView(AuthenticatedModelView):
 
         return super().on_model_delete(model)
 
+
+
 class InvoiceView(AuthenticatedModelView):
     column_list = ['id','issue_date','due_date','amount','status','rental_contract']
     column_filters = ['contract_id']
@@ -184,11 +188,61 @@ class ServiceView(AuthenticatedModelView):
     form_excluded_columns = ['apartments']
 
 
+class StatsView(BaseView):
+    @expose('/')
+    def index(self):
+        return self.render('admin/stats.html',status_apartments=dao.get_apartments_status_stats()
+                                                      ,revenue_month=dao.get_revenue_by_month()
+                                                      ,contracts_expiring=dao.get_contracts_expiring(90),today=date.today())
+
+    def is_accessible(self) -> bool:
+        return current_user.is_authenticated and current_user.user_role == UserRole.ADMIN
+
+
+class PaymentConfirm(BaseView):
+
+    @expose('/')
+    def index(self):
+        payments = Payment.query.filter_by(
+            status=PaymentStatus.CHO_XU_LY
+        ).all()
+        return self.render('admin/confirm.html', payments=payments)
+
+    @expose('/<int:id>/approve', methods=['POST'])
+    def approve(self, id):
+        payment = Payment.query.get_or_404(id)
+
+        if payment.status != PaymentStatus.CHO_XU_LY:
+            return jsonify({'error': 'Invalid state'}), 400
+
+        payment.status = PaymentStatus.THANH_CONG
+        payment.invoice.status = InvoiceType.DA_THANH_TOAN
+        payment.invoice.rental_contract.apartment.status = ContractType.DANG_THUE
+
+        db.session.commit()
+        return jsonify({'status': 'ok'})
+
+    @expose('/<int:id>/reject', methods=['POST'])
+    def reject(self, id):
+        payment = Payment.query.get_or_404(id)
+        payment.status = PaymentStatus.THAT_BAI
+
+        db.session.commit()
+        return jsonify({'status': 'rejected'})
+
+    def is_accessible(self):
+        return (
+            current_user.is_authenticated and
+            current_user.user_role == UserRole.ADMIN
+        )
+
 
 admin.add_view(ApartmentTypeView(ApartmentType,db.session,name='Loại căn hộ'))
 admin.add_view(ApartmentView(Apartment,db.session,name='Quản lí căn hộ'))
 admin.add_view(ContractView(RentalContract,db.session,name='Quản lí hợp đồng'))
 admin.add_view(InvoiceView(Invoice,db.session,name='Quản lí hóa đơn'))
 admin.add_view(ServiceView(Service,db.session,name='Quản lí dịch vụ'))
+admin.add_view(PaymentConfirm(name="Duyệt thanh toán"))
+admin.add_view(StatsView(name='Thống kê & Báo cáo'))
 admin.add_view(RuleView(ApartmentRule,db.session,name='Thay đổi quy định'))
 admin.add_view(Logout_View(name='Đăng xuất'))

@@ -1,26 +1,54 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const startDate = document.getElementById("start_date");
-    const duration = document.getElementById("duration");
-    const endDate = document.getElementById("end_date");
+
+document.addEventListener('DOMContentLoaded', function() {
+    const startDateInput = document.getElementById('start_date');
+    const durationSelect = document.getElementById('duration');
+    const endDateInput = document.getElementById('end_date');
 
     function calculateEndDate() {
-        if (!startDate?.value || !duration?.value) return;
+        const startDateValue = startDateInput.value;
+        const durationValue = durationSelect.value;
 
-        let start = new Date(startDate.value);
+        if (!startDateValue || !durationValue) return;
 
-        if (duration.value === "SIX_MONTHS") {
-            start.setMonth(start.getMonth() + 6);
-        } else if (duration.value === "ONE_YEAR") {
-            start.setFullYear(start.getFullYear() + 1);
+        let startDate;
+        if (startDateValue.includes('/')) {
+            const parts = startDateValue.split('/');
+            startDate = new Date(parts[2], parts[1] - 1, parts[0]);
+        } else {
+            startDate = new Date(startDateValue);
         }
 
-        const yyyy = start.getFullYear();
-        const mm = String(start.getMonth() + 1).padStart(2, '0');
-        const dd = String(start.getDate()).padStart(2, '0');
+        let endDate = new Date(startDate);
 
-        endDate.value = `${yyyy}-${mm}-${dd}`;
+        if (durationValue === 'SIX_MONTHS') {
+            endDate.setMonth(endDate.getMonth() + 6);
+        } else if (durationValue === 'ONE_YEAR') {
+            endDate.setFullYear(endDate.getFullYear() + 1);
+        }
+
+        const day = String(endDate.getDate()).padStart(2, '0');
+        const month = String(endDate.getMonth() + 1).padStart(2, '0');
+        const year = endDate.getFullYear();
+
+        // Format YYYY-MM-DD cho cả hiển thị và server
+        const formattedDate = `${year}-${month}-${day}`;
+
+        endDateInput.removeAttribute('readonly');
+        endDateInput.value = formattedDate;
+        endDateInput.setAttribute('readonly', 'readonly');
     }
 
-    startDate?.addEventListener("change", calculateEndDate);
-    duration?.addEventListener("change", calculateEndDate);
+    let lastStartDate = '';
+    let lastDuration = '';
+
+    setInterval(function() {
+        if (startDateInput.value !== lastStartDate ||
+            durationSelect.value !== lastDuration) {
+            lastStartDate = startDateInput.value;
+            lastDuration = durationSelect.value;
+            calculateEndDate();
+        }
+    }, 300);
+
+    durationSelect.addEventListener('change', calculateEndDate);
 });

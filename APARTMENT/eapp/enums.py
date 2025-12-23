@@ -15,6 +15,14 @@ class ContractType(ContractEnum):
     DA_DAT_COC=2
     DANG_THUE=3
 
+    @property
+    def label(self):
+        return {
+            ContractType.TRONG: "Trống",
+            ContractType.DA_DAT_COC: "Đã đặt cọc",
+            ContractType.DANG_THUE: "Đang thuê",
+        }[self]
+
 
 class InvoiceType(InvoiceEnum):
     CHUA_THANH_TOAN = 1

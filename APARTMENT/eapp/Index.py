@@ -1,12 +1,14 @@
+
 from flask import render_template, request, redirect, jsonify, session
-from flask_login import login_user, logout_user,login_required
+from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy.testing import emits_warning
 
-from eapp.enums import ContractType
-from eapp.models import UserRole, Apartment, ApartmentType
+from eapp.dao import get_user_contracts
+from eapp.enums import ContractType, PaymentStatus
+from eapp.models import UserRole, Apartment, ApartmentType,RentalContract
 from eapp import app, dao,login,utils
 import math
-
+import enum
 @app.route('/')
 def index():
 
@@ -70,7 +72,7 @@ def login_view():
 
 @app.route('/login',methods=['get','post'])
 def login_process():
-    print(request.form)
+    # print(request.form)
     username = request.form.get('username')
     password = request.form.get('password')
 
@@ -146,21 +148,38 @@ def add_to_cart():
 @login_required
 def pay():
     try:
+        # print("RAW:", request.data)
+
+        data = request.get_json(silent=True)
+        # print("JSON:", data)
+        if not data:
+            return jsonify({'status': 400, 'error': 'Invalid JSON payload'}), 400
+        payment_method = data.get('payment_method')
+
         cart = session.get('cart')
-        print(f"Cart before processing: {cart}")  # Debug
-
-        dao.add_contract(cart=cart)
-
-        print("Contract added successfully")  # Debug
+        dao.add_contract(cart=cart, payment_method=payment_method)
+        # print(f"Cart before processing: {cart}")  # Debug
 
         del session['cart']
         session.modified = True
-        print("Cart deleted from session")  # Debug
+        # print("DATA:", data)
+        # print("PAYMENT METHOD:", payment_method)
+        # # Trong route pay()
+        # print("=== CART STRUCTURE ===")
+        # print(f"Type: {type(cart)}")
+        # print(f"Keys: {cart.keys() if cart else 'None'}")
+        if cart:
+            for k, v in cart.items():
+                print(f"  {k}: {v}")
 
         return jsonify({'status': 200})
     except Exception as ex:
-        print(f"ERROR in /api/pay: {ex}")  # Debug
-        return jsonify({'status': 400, 'err_msg': str(ex)})
+        print("PAY ERROR:", ex)
+        return jsonify({'status': 500, 'error': str(ex)})
+
+
+
+
 
 @app.route('/cart')
 def cart_view():
@@ -176,6 +195,19 @@ def common_responses():
         'apartmenttype':dao.load_apartmenttypes(),
         'cart_stats':utils.count_cart(session.get('cart'))
     }
+
+
+@app.route('/profile')
+@login_required
+def profile():
+    contracts = get_user_contracts(current_user.id)
+    return render_template(
+        'profile.html',
+        contracts=contracts,
+        user=current_user,
+        PaymentStatus=PaymentStatus
+    )
+
 
 if __name__ == '__main__':
     from eapp import admin

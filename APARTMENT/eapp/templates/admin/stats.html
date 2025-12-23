@@ -1,0 +1,276 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}̀
+<h1 class="text-center text-success mt-2">THỐNG KÊ & BÁO CÁO</h1>
+<hr/>
+
+<div class="row mb-4 justify-content-end">
+    <div class="col-md-4">
+        <label class="form-label"><strong>Báo cáo:</strong></label>
+        <select id="reportSelector" class="form-select shadow-sm border-0" style="background-color:#f8f9fa">
+            <option value="room-status">Tình trạng thuê phòng</option>
+            <option value="revenue">Doanh thu theo tháng</option>
+            <option value="contracts">Hợp đồng sắp hết hạn</option>
+            <option value="all">Tất cả biểu đồ</option>
+        </select>
+    </div>
+</div>
+
+
+<div id="room-status" class="report-section ">
+    <div class="row align-items-start">
+        <div class="col-md-5 col-6 card p-0">
+            <div class="card-header text-white text-center bg-success">
+                <strong>Tình trạng thuê phòng</strong>
+            </div>
+            <table class="table mb-0 table-bordered text-center">
+                <tr>
+                    <th>Trạng thái</th>
+                    <th> Số lượng</th>
+                </tr>
+                {% for apar in status_apartments %}
+                <tr>
+                    <td>{{ apar[0].label }}</td>
+                    <td>{{ apar[1] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="col-md-7 col-6">
+            <canvas id="apartment_status_chart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div id="revenue" class="report-section d-none">
+    <div class="row align-items-start">
+        <div class="col-md-5 col-6 card p-0">
+            <div class="card-header text-white text-center bg-primary ">
+                <strong>Doanh thu từng tháng</strong>
+            </div>
+            <table class="table mb-0 table-bordered text-center">
+                <tr>
+                    <th>Tháng</th>
+                    <th>Doanh thu</th>
+                </tr>
+                {% for r in revenue_month %}
+                <tr>
+                    <td>Tháng {{ r[0] }}</td>
+                    <td>{{ "{:,.0f}".format(r[1]) }} VNĐ</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="col-md-7 col-6 pt-4">
+            <div style="height: 420px;">
+                <canvas id="revenue_month_chart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="contracts" class="report-section d-none mt-5">
+    <div class="row align-items-start">
+        <!-- BẢNG -->
+        <div class="col-md-5 col-6 card p-0">
+            <div class="card-header text-white text-center bg-warning">
+                <strong>Hợp đồng sắp hết hạn</strong>
+            </div>
+
+            <table class="table mb-0 table-bordered text-center">
+                <tr>
+                    <th>Căn hộ</th>
+                    <th>Ngày hết hạn</th>
+                    <th>Ngày còn lại</th>
+                </tr>
+
+                {% for c in contracts_expiring %}
+                <tr>
+                    <td>{{ c.apartment.name }}</td>
+                    <td>{{ c.end_date.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ (c.end_date - today).days }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+
+        <div class="col-md-7 col-6">
+            <div style="height: 420px;">
+                <canvas id="contract_expiring_chart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    function apartmentStats(ctx, labels, data) {
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Số lượng',
+                    data: data,
+                    borderWidth: 1,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { size: 14, family: 'Arial' },
+                            padding: 20
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Thống kê tình trạng thuê phòng',
+                        font: { size: 18, weight: 'bold' }
+                    }
+                },
+                scales: {
+                    y: { display: false },
+                    x: { display: false }
+                }
+            }
+        });
+    }
+
+    function revenueStats(ctx, labels, data) {
+       new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Doanh thu',
+                    data: data,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('vi-VN') ;
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    title: {
+                        display: true,
+                        text: 'Thống kê doanh thu theo tháng',
+                        font: { size: 18, weight: 'bold' }
+                    }
+                }
+            }
+        });
+    }
+
+       function contractStats(ctx, labels, data) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Số ngày còn lại',
+                        data: data,
+                        backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Số ngày' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Thống kê ngày hết hạn hợp đồng',
+                            font: { size: 18, weight: 'bold' }
+                        }
+                    }
+                }
+            });
+        }
+
+        window.onload = function() {
+
+            let label = [];
+            let data = [];
+
+            {% for a in status_apartments %}
+            label.push('{{a[0].label}}');
+            data.push({{a[1]}});
+            {% endfor %}
+
+             const ctx = document.getElementById('apartment_status_chart');
+             apartmentStats(ctx, label, data);
+
+
+            let label1 = [];
+            let data1 = [];
+
+            {% for r in revenue_month %}
+            label1.push('Tháng {{ r[0] }}');
+            data1.push({{ r[1] }});
+            {% endfor %}
+
+            const ctx1 = document.getElementById('revenue_month_chart')
+            revenueStats(ctx1,label1,data1);
+
+            let label2 = [];
+            let data2 = [];
+
+            {% for c in contracts_expiring %}
+            label2.push('{{ c.apartment.name }}');
+            data2.push({{ (c.end_date - today).days }});
+            {% endfor %}
+
+            const ctx2 = document.getElementById('contract_expiring_chart');
+            contractStats(ctx2, label2, data2);
+        }
+
+
+</script>
+<script src="{{ url_for('static', filename='js/stats.js') }}"></script>
+
+{% endblock %}

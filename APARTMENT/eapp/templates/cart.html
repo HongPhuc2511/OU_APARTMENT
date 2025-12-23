@@ -1,7 +1,7 @@
 {% extends 'layout/base.html' %}
 {% block content %}
 <div class="container py-5">
-  <h2 class="text-center text-success mb-4">🛒 Căn hộ đã thêm</h2>
+  <h2 class="text-center text-success mb-4"> Căn hộ đã thêm</h2>
 
   {% if 'cart' in session %}
   <div class="table-responsive">
@@ -28,7 +28,7 @@
           <td class="text-danger fw-bold">{{ "{:,.0f}".format(c.price) }} VNĐ</td>
           <td>
             <a href="{{ url_for('apartment_detail', id=c.id) }}" class="btn btn-outline-primary btn-sm mb-1">Xem chi tiết</a>
-            <button class="btn btn-outline-danger btn-sm" onclick="deleteCart({{ c.id }})">&times;</button>
+            <button class="btn btn-outline-danger btn-sm cart-total" onclick="deleteCart({{ c.id }})">&times;</button>
           </td>
         </tr>
         {% endfor %}
@@ -42,7 +42,11 @@
 
   <div class="text-end mt-3">
     {% if current_user.is_authenticated %}
-    <button class="btn btn-success px-4" onclick="pay()">Thanh toán</button>
+    <button class="btn btn-success px-4" data-bs-toggle="modal" data-bs-target="#paymentModal">
+        Thanh toán
+    </button>
+
+
     {% else %}
     <div class="alert alert-warning d-inline-block">
       Vui lòng <a href="/login?next=cart" class="text-decoration-underline">đăng nhập</a> để thanh toán!
@@ -55,5 +59,48 @@
     <h5>Không có sản phẩm nào trong giỏ hàng</h5>
   </div>
   {% endif %}
+
+
+<div class="modal fade" id="paymentModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Chọn phương thức thanh toán</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="radio" name="paymentMethod" value="cash" checked>
+          <label class="form-check-label">Tiền mặt</label>
+        </div>
+
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="radio" name="paymentMethod" value="bank">
+          <label class="form-check-label">Chuyển khoản ngân hàng</label>
+        </div>
+
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="radio" name="paymentMethod" value="momo">
+          <label class="form-check-label">Ví MoMo</label>
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="paymentMethod" value="zaloPay">
+            <label class="form-check-label">ZaloPay</label>
+        </div>
+      </div>
+
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        <button class="btn btn-success" onclick="pay()">Xác nhận thanh toán</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
 </div>
 {% endblock %}
