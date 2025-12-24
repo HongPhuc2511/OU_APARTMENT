@@ -1,14 +1,12 @@
 
-from flask import render_template, request, redirect, jsonify, session
+from flask import render_template, request, redirect, jsonify, session, flash, url_for
 from flask_login import login_user, logout_user, login_required, current_user
-from sqlalchemy.testing import emits_warning
 
 from eapp.dao import get_user_contracts
 from eapp.enums import ContractType, PaymentStatus
 from eapp.models import UserRole, Apartment, ApartmentType,RentalContract
 from eapp import app, dao,login,utils
 import math
-import enum
 @app.route('/')
 def index():
 
@@ -70,18 +68,24 @@ def register_process():
 def login_view():
     return render_template('login.html')
 
-@app.route('/login',methods=['get','post'])
+@app.route('/login', methods=['GET', 'POST'])
 def login_process():
-    # print(request.form)
-    username = request.form.get('username')
-    password = request.form.get('password')
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
 
-    u=dao.auth_user(username=username,password=password)
+        user = dao.auth_user(username=username, password=password)
 
-    if u:
-        login_user(user=u)
-    next=request.args.get('next')
-    return redirect(next if next else '/')
+        if user:
+            login_user(user)
+            next = request.args.get('next')
+            return redirect(next if next else '/')
+        else:
+            flash('Tên đăng nhập hoặc mật khẩu không đúng', 'error')
+            return redirect("/login")
+
+    return render_template('login.html')
+
 
 @app.route('/apartment/<int:id>')
 def apartment_detail(id):
@@ -148,7 +152,7 @@ def add_to_cart():
 @login_required
 def pay():
     try:
-        # print("RAW:", request.data)
+
 
         data = request.get_json(silent=True)
         # print("JSON:", data)
@@ -158,16 +162,9 @@ def pay():
 
         cart = session.get('cart')
         dao.add_contract(cart=cart, payment_method=payment_method)
-        # print(f"Cart before processing: {cart}")  # Debug
 
         del session['cart']
         session.modified = True
-        # print("DATA:", data)
-        # print("PAYMENT METHOD:", payment_method)
-        # # Trong route pay()
-        # print("=== CART STRUCTURE ===")
-        # print(f"Type: {type(cart)}")
-        # print(f"Keys: {cart.keys() if cart else 'None'}")
         if cart:
             for k, v in cart.items():
                 print(f"  {k}: {v}")
@@ -176,10 +173,6 @@ def pay():
     except Exception as ex:
         print("PAY ERROR:", ex)
         return jsonify({'status': 500, 'error': str(ex)})
-
-
-
-
 
 @app.route('/cart')
 def cart_view():

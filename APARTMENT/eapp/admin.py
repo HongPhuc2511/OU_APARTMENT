@@ -1,5 +1,4 @@
-from ensurepip import bootstrap
-from tempfile import template
+
 
 from dateutil.relativedelta import relativedelta
 from flask_admin.contrib.sqla import ModelView
@@ -8,8 +7,7 @@ from flask_admin.contrib.sqla.fields import QuerySelectField
 from werkzeug.routing import Rule
 
 from eapp.enums import ContractType, PaymentStatus, InvoiceType
-from eapp.models import ApartmentType, Apartment, UserRole, ApartmentRule, RentalContract, Invoice,Payment, Service, \
-    ServiceDetail
+from eapp.models import ApartmentType, Apartment, UserRole, ApartmentRule, RentalContract, Invoice,Payment, Service
 from flask import template_rendered, jsonify
 from flask_admin import Admin
 from eapp import db,app

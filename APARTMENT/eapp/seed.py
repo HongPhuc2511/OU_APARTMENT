@@ -69,7 +69,6 @@ def seed_users_and_contracts(apartments):
     db.session.add_all(contracts)
     db.session.commit()
 
-
 def seed_invoices(contracts):
     invoices = []
     for c in contracts:

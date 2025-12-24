@@ -1,16 +1,14 @@
 
 import hashlib
-
-
 from flask_login import current_user
 
 from eapp.enums import ContractType, ContractDuration, InvoiceType, PaymentType, PaymentStatus
-from eapp.models import ApartmentType, Apartment, User, RentalContract, Invoice, Payment
+from eapp.models import ApartmentType, Apartment, User, RentalContract, Invoice, Payment, ServiceDetail
 from eapp import app, db
 import cloudinary.uploader
 from sqlalchemy import func, extract
 import datetime
-
+from datetime import date, timedelta
 def load_apartmenttypes():
     return ApartmentType.query.all()
 
@@ -84,7 +82,7 @@ def add_contract(cart, payment_method):
         raise ValueError(f'Invalid payment method: {payment_method}')
 
     for c in cart.values():
-        # 1. Tạo hợp đồng (CHƯA kích hoạt)
+
         contract = RentalContract(
             user_id=current_user.id,
             apartment_id=c['id'],
@@ -123,7 +121,7 @@ def add_contract(cart, payment_method):
 def get_user_contracts(user_id):
     contracts = (db.session.query(RentalContract)
                  .filter_by(user_id=user_id)
-                 .order_by(RentalContract.start_date.desc())  # mới nhất trước
+                 .order_by(RentalContract.start_date.desc())
                  .all())
     return contracts
 
@@ -145,11 +143,9 @@ def get_revenue_by_month(year=2025):
         .all()
     )
 
-from datetime import date, timedelta
 
 def get_contracts_expiring(days):
     deadline = date.today() + timedelta(days=days)
-
     return (
         db.session.query(RentalContract).filter(RentalContract.end_date != None,
                                                 RentalContract.end_date >= date.today(),

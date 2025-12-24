@@ -3,10 +3,18 @@
 <div class="d-flex justify-content-center align-items-center vh-100 bg-light">
   <div class="card shadow p-4" style="width: 100%; max-width: 400px;">
     <h2 class="text-center text-primary mb-4">ĐĂNG NHẬP</h2>
-    <form method="post" action="">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-danger">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="post" action="{{ url_for('login_process') }}">
       <div class="mb-3">
         <label for="username" class="form-label">Tên đăng nhập</label>
-        <input type="text" class="form-control" id="username" name="username" placeholder="Nhập tên đăng nhập" required>
+        <input type="text" class="form-control" id="username" name="username" placeholder="Nhập tên đăng nhập"
+               required autofocus value="{{ request.form.username or '' }}">
       </div>
       <div class="mb-3">
         <label for="password" class="form-label">Mật khẩu</label>
