@@ -13,6 +13,7 @@ Backend	Flask
 Frontend	Bootstrap
 Database	MySQL
  Getting Started
+ 
 ```bash
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
